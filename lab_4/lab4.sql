@@ -1,235 +1,96 @@
-USE lab04;
 
+USE lw4;
+#без указания списка полей
+INSERT INTO genre
+	VALUES(1, 'Комедия', 'Описание жанра комедия');
+#с указанием списка полей
+INSERT INTO genre (id_genre, name, description)
+	VALUES(2, 'Роман','Описания жанра роман');
+INSERT INTO genre
+	VALUES(3, 'Поэма', 'Описание');
+#с чтением значения из другой таблицы
+INSERT INTO author (first_name, last_name, date_of_birth)
+	SELECT first_name, last_name, date_of_birth FROM employee;
 
--- 3.1 INSERT
+#удаление всех записей    
+DELETE FROM genre;
+#удаление по условию
+DELETE FROM author WHERE first_name='Иван' AND last_name='Иванов';
 
--- 3.1a Без указания списка полей
-INSERT INTO passenger
-VALUES (700, 'John', 'Doe', 1, '1989-07-15'),
-       (701, 'Joanne', 'Di', 0, '1995-03-02');
+#update всех записей
+UPDATE employee SET first_name='Николай';
+#по условию обновляя один атрибут
+UPDATE employee SET first_name='Анатолий' WHERE id_employee='2';
+#по условию обновляя несколько атрибутов
+UPDATE employee SET first_name='Александр', last_name='Волков' WHERE id_employee='1';
 
--- 3.1b С указанием списка полей
-INSERT INTO plane (name, capacity, fuel_consumption, adoption_date)
-VALUES ('Thunder', 50, 2500, '1999-03-02'),
-       ('Margaret', 100, 3000, '2005-06-15');
+#с набором извлекаемых атрибутов (SELECT atr 1, atr 2 FROM...)
+SELECT id_employee, last_name FROM employee;
+#со всеми атрибутами (SELECT * FROM...)
+SELECT * FROM employee;
+#c условием по атрибуту (SELECT * FROM ... WHERE atr1 = value)
+SELECT * FROM employee WHERE first_name='Иван';
 
--- 3.1c С чтением значения из другой таблицы
-INSERT INTO passenger (first_name, last_name, gender, birthdate)
-SELECT first_name, last_name, gender, '1986-01-15'
-FROM employee
-WHERE id_employee = 1;
+#с сортировкой по возрастанию ASC + ограничение вывода количества записей
+SELECT * FROM author ORDER BY first_name ASC LIMIT 2, 3;
+#c сортировкой по убыванию DESC
+SELECT * FROM author ORDER BY id_author DESC;
+#c сортировкой по двум атрибутам + ограничение вывода количества записей
+SELECT * FROM author ORDER BY last_name, date_of_birth LIMIT 4;
+#c cортировкой по первому атрибуту, из списка извлекаемых
+SELECT * FROM author ORDER BY id_author;
 
+#where по дате
+SELECT * FROM book WHERE date_publishing='1836-10-14';
+#where по дате в диапазоне
+SELECT * FROM book WHERE date_publishing > '1825-10-14' AND date_publishing < '1860-04-19';
+#извлечь только год year
+SELECT id_book, YEAR(date_publishing) as year_publishing FROM book;
 
--- 3.2 DELETE
+#посчитать кол-во записей в таблице
+SELECT COUNT(*) FROM author;
+#посчитать кол-во уникальных записей в таблице
+SELECT COUNT(DISTINCT(id_author)) FROM author;
+#вывести уникальные значения столбца
+SELECT DISTINCT(id_author) FROM author;
+#найти максимальное значение столбца
+SELECT MAX(id_author) FROM author;
+#найти минимальное значение столбца
+SELECT MIN(id_author) FROM author;
+#написать запрос COUNT() + GROUP BY
+SELECT COUNT(id_author), last_name FROM author GROUP BY last_name;
 
--- 3.2a Всех записей
--- noinspection SqlWithoutWhere
-DELETE
-FROM plane_has_employee;
+#выводит полную сумму продаж каждого работника, где общая сумма продаж превышает 1100
+SELECT id_employee, SUM(amount) AS total_amount FROM sale GROUP BY id_employee HAVING SUM(amount)>1100; 
+#выводит кол-во выпущенных книг каждого издательства, где кол-во страниц больше 170
+SELECT id_publishing_house, COUNT(id_book) AS book_quantity, page_number FROM book GROUP BY id_publishing_house HAVING AVG(page_number) > 170;
+#выводит количество проданных экземпляров каждой книги, где дата продажи позже 2022-02-01 00:00:00
+SELECT id_copy, SUM(quantity) AS total_quantity FROM sale GROUP BY id_copy, sale_date HAVING sale_date > '2022-02-01 00:00:00';
 
--- 3.2b По условию
-DELETE
-FROM plane
-WHERE fuel_consumption = 3000;
-
-
--- 3.3 UPDATE
-
--- 3.3a Всех записей
--- noinspection SqlWithoutWhere
-UPDATE passenger
-SET first_name = 'Jane';
-
--- 3.3b По условию обновляя один атрибут
-UPDATE passenger
-SET birthdate = '1996-03-02'
-WHERE last_name = 'Di';
-
--- 3.3c По условию обновляя несколько атрибутов
-UPDATE passenger
-SET first_name = 'Argenta',
-    birthdate  = '1996-03-02'
-WHERE id_passenger = 2;
-
-
--- 3.4 SELECT
-
--- 3.4a С набором извлекаемых атрибутов
-SELECT first_name, last_name
-FROM passenger;
-
--- 3.4b Со всеми атрибутами
-SELECT *
-FROM employee;
-
--- 3.4c С условием по атрибуту
-SELECT *
-FROM plane
-WHERE capacity = 50;
-
-
--- 3.5 SELECT ORDER BY + TOP (LIMIT)
-
--- 3.5a С сортировкой по возрастанию ASC + ограничение вывода количества записей
-SELECT *
-FROM plane
-ORDER BY fuel_consumption
-LIMIT 5;
-
--- 3.5b С сортировкой по убыванию DESC
-SELECT *
-FROM plane
-ORDER BY capacity DESC;
-
--- 3.5c С сортировкой по двум атрибутам + ограничение вывода количества записей
-SELECT *
-FROM plane
-ORDER BY capacity DESC, fuel_consumption
-LIMIT 5;
-
--- 3.5d С сортировкой по первому атрибуту, из списка извлекаемых
-SELECT capacity, name
-FROM plane
-ORDER BY 1;
-
-
--- 3.6 Работа с датами
-
--- 3.6a WHERE по дате
-SELECT *
-FROM plane
-WHERE adoption_date = '2016-03-10';
-
--- 3.6b WHERE дата в диапазоне
-SELECT *
-FROM passenger
-WHERE birthdate BETWEEN '1970-01-01' AND '1979-12-31';
-
--- 3.6c Извлечь из таблицы не всю дату, а только год
-SELECT name, YEAR(adoption_date) AS adoption_year
-FROM plane;
-
-
--- 3.7 Функции агрегации
-
--- 3.7a Посчитать количество записей в таблице
-SELECT COUNT(*) AS amount_of_employees
-FROM employee;
-
--- 3.7b Посчитать количество уникальных записей в таблице
-SELECT COUNT(DISTINCT first_name) AS amount_of_unique_passengers_names
-FROM passenger;
-
--- 3.7c Вывести уникальные значения столбца
-SELECT DISTINCT first_name
-FROM passenger;
-
--- 3.7d Найти максимальное значение столбца
-SELECT MAX(capacity) AS max_plane_capacity
-FROM plane;
-
--- 3.7e Найти минимальное значение столбца
-SELECT MIN(fuel_consumption) AS min_plane_fuel_consumption
-FROM plane;
-
--- 3.7f Написать запрос COUNT() + GROUP BY
-SELECT first_name, COUNT(*) AS occurrences
-FROM passenger
-GROUP BY first_name;
-
-
--- 3.8 SELECT GROUP BY + HAVING
-
--- 3.8a Написать 3 разных запроса с использованием GROUP BY + HAVING. Для
--- каждого запроса написать комментарий с пояснением, какую информацию
--- извлекает запрос. Запрос должен быть осмысленным, т.е. находить информацию,
--- которую можно использовать.
-
--- Capacities of the planes and their average fuel consumptions less than 3500
-SELECT capacity, AVG(fuel_consumption) AS average_fuel_consumption
-FROM plane
-GROUP BY capacity
-HAVING AVG(fuel_consumption) < 3500;
-
--- Amount of planes having the same capacity
-SELECT capacity, COUNT(*) AS amount
-FROM plane
-GROUP BY capacity
-HAVING COUNT(*) > 1;
-
--- Overall capacity and fuel consumption of planes adopted between 2017 and 2020 with resulting capacity more than 120
-SELECT SUM(capacity) AS overall_capacity, SUM(fuel_consumption) AS overall_fuel_consumption
-FROM plane
-WHERE YEAR(adoption_date) BETWEEN 2017 AND 2020
-GROUP BY fuel_consumption
-HAVING SUM(capacity) > 120;
-
-
--- 3.9 SELECT JOIN
-
--- 3.9a LEFT JOIN двух таблиц и WHERE по одному из атрибутов
--- Flights and corresponding planes
-SELECT p.name, f.start_date, f.end_date
-FROM flight f
-         LEFT JOIN plane p ON f.id_plane = p.id_plane;
-
--- 3.9b RIGHT JOIN. Получить такую же выборку, как и в 3.9a
--- Flights and corresponding planes
-SELECT p.name, f.start_date, f.end_date
-FROM plane p
-         RIGHT JOIN flight f ON p.id_plane = f.id_plane;
-
--- 3.9c LEFT JOIN трех таблиц + WHERE по атрибуту из каждой таблицы
--- Which male pilot works at the plane named 'Celebration'
-SELECT e.first_name, e.last_name
-FROM plane_has_employee phe
-         LEFT JOIN employee e ON phe.id_employee = e.id_employee AND e.gender = 1
-         LEFT JOIN plane p ON phe.id_plane = p.id_plane AND p.name = 'Celebration'
-WHERE phe.position = 0;
-
--- 3.9d INNER JOIN двух таблиц
--- Tickets and their owners
-SELECT t.price, p.first_name, p.last_name
-FROM ticket t
-         INNER JOIN passenger p ON t.id_passenger = p.id_passenger;
-
-
--- 3.10 Подзапросы
-
--- 3.10a Написать запрос с условием WHERE IN (подзапрос)
--- Planes witch flew at least once
-SELECT name
-FROM plane
-WHERE id_plane IN (SELECT id_plane FROM flight);
-
--- 3.10b Написать запрос SELECT atr1, atr2, (подзапрос) FROM ...
--- Amount of flights each plane had
-SELECT p.name,
-       (
-           SELECT COUNT(*)
-           FROM flight f
-           WHERE p.id_plane = f.id_plane
-       ) AS amount_of_flights
-FROM plane p
-ORDER BY amount_of_flights DESC;
-
--- 3.10c Написать запрос вида SELECT * FROM (подзапрос)
--- Planes having names starting with 'C' and capacity more than 60
-SELECT c_planes.name, c_planes.capacity
-FROM (
-         SELECT *
-         FROM plane
-         WHERE LOWER(name) LIKE 'c%'
-     ) c_planes
-WHERE c_planes.capacity > 60;
-
--- 3.10d Написать запрос вида SELECT * FROM table JOIN (подзапрос) ON ...
--- Old price and new price with personal discount for each passenger based on their last purchased ticket
-SELECT p.first_name, p.last_name, tp.old AS old_price, tp.new AS new_price
-FROM passenger p
-         INNER JOIN (
-    SELECT t.id_passenger AS id_passenger, t.price AS old, (t.price * 0.8) AS new
-    FROM ticket t
-    ORDER BY purchase_date DESC
-    LIMIT 1
-) tp ON p.id_passenger = tp.id_passenger;
+SELECT genre.id_genre, genre.name, book.id_genre, book.name FROM genre
+	LEFT JOIN book ON genre.id_genre = book.id_genre 
+    WHERE genre.id_genre > 2;
+SELECT genre.id_genre, genre.name, book.id_genre, book.name FROM genre
+	RIGHT JOIN book ON genre.id_genre = book.id_genre 
+    WHERE genre.id_genre < 2;
+#сколько каждый сотрудник продал экземпляров книг
+SELECT employee.id_employee, SUM(sale.quantity) AS total_quantity FROM employee
+	LEFT JOIN sale ON employee.id_employee = sale.id_employee
+    LEFT JOIN copy ON copy.id_copy = sale.id_copy
+    LEFT JOIN book ON book.id_book = copy.id_book
+    GROUP BY employee.id_employee    HAVING total_quantity > 5;
+SELECT genre.id_genre, genre.name, book.id_genre, book.name FROM genre 
+	INNER JOIN book ON genre.id_genre = book.id_genre;
+    
+#выберем все экземпляры книг из copy, которые были проданы в таблице sale
+SELECT id_copy, id_book FROM copy
+WHERE id_copy IN (SELECT id_copy FROM sale); 
+#выберем все выпущенные экземпляры книг и добавим информацию о названии книги
+SELECT id_copy, id_book, quantity, (SELECT name FROM book WHERE book.id_book = copy.id_book) AS book_name FROM copy;
+#
+SELECT name, date_publishing FROM 
+	(SELECT * FROM book WHERE name = 'Тихий Дон') book
+    ORDER BY book.name;
+#
+SELECT name, description FROM book 
+	INNER JOIN (SELECT * FROM copy WHERE date_of_printing > '2000-01-01') c ON book.id_book = c.id_book;
