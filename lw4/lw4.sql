@@ -1,4 +1,3 @@
-
 USE lw4;
 #без указания списка полей
 INSERT INTO genre
